@@ -1,6 +1,5 @@
+from functools import partial
 import operator
-
-import pytest
 
 from fungebra import Args, F, identity, pipeline
 
@@ -164,3 +163,39 @@ def test_decorator_usage():
 
     func = negative.map.filter(even) | next
     assert func([1, 2, 3]) == -2
+
+
+def test_hash_of_wrapped_function_is_the_same():
+    assert hash(F(sum)) == hash(sum)
+
+
+def test_repr_of_wrapped_function_is_as_expected():
+    assert repr(F(sum)) == "Function(<built-in function sum>)"
+
+
+class TestMapFilterReduceOperators:
+
+    @staticmethod
+    def test_left_reduce_operator():
+        double_sum = F(double) / operator.add
+        assert double_sum([1, 2, 3]) == 12
+
+    @staticmethod
+    def test_right_reduce_operator():
+        double_sum = double / F(operator.add)
+        assert double_sum([1, 2, 3]) == 12
+
+    @staticmethod
+    def test_left_filter_operator():
+        increment_filter = F(increment).map % even | list
+        assert increment_filter([1, 2, 3]) == [2, 4]
+
+    @staticmethod
+    def test_right_filter_operator():
+        increment_filter = partial(map, increment) % F(even) | list
+        assert increment_filter([1, 2, 3]) == [2, 4]
+
+    @staticmethod
+    def test_unary_map_operator():
+        double_sum = + F(double) / operator.add
+        assert double_sum([1, 2, 3]) == 12

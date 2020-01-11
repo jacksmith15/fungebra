@@ -1,6 +1,6 @@
 [![Build Status](https://travis-ci.com/jacksmith15/fungebra.svg?token=JrMQr8Ynsmu5tphpTQ2p&branch=master)](https://travis-ci.com/jacksmith15/fungebra)
 # Fungebra
-Wrapper to allow algebraic manipulation and composition of functions.
+Wrapper to allow algebraic manipulation and composition of functions. The aims of this package are purely academic, I do not recommend using this if you respect the other people working on your code.
 
 # Requirements
 This package is currently tested for Python 3.6.

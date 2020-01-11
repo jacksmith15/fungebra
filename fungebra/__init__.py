@@ -7,14 +7,11 @@ from typing import Callable, Iterable, Union
 __version__ = "0.0.0"
 
 
-identity: Callable = lambda _: _
-
-
 def compose(*functions: Callable) -> Callable:
     """Composes arbitrary number of functions."""
     def _compose_pair(outer: Callable, inner: Callable) -> Callable:
         return lambda *args, **kwargs: outer(inner(*args, **kwargs))
-    return reduce(_compose_pair, functions, identity)
+    return reduce(_compose_pair, functions, lambda _: _)
 
 
 class Function:
@@ -76,9 +73,6 @@ class Function:
             return self(*other.args, **other.kwargs)
         return self(other)
 
-    def __eq__(self, other):
-        return self.func == F(other).func
-
     def __lshift__(self, input_args):
         if isinstance(input_args, Args):
             return self.partial(*input_args.args, **input_args.kwargs)
@@ -86,8 +80,25 @@ class Function:
             return self.partial(**input_args)
         return self.partial(*input_args)
 
+    def __pos__(self):
+        return self.map
+
+    def __truediv__(self, other):
+        return self.reduce(other)
+
+    def __rtruediv__(self, other):
+        return F(other).reduce(self)
+
+    def __mod__(self, other):
+        return self.filter(other)
+
+    def __rmod__(self, other):
+        return F(other).filter(self)
+
 
 class Args:
+    """Dataclass representing arguments passed to a function."""
+
     def __init__(self, *args, **kwargs):
         self.args = args
         self.kwargs = kwargs
@@ -97,5 +108,12 @@ class Args:
 F = Func = Function  # pylint: disable=invalid-name
 
 
+identity: Callable = F(lambda _: _)
+
+# Allow options for importing.
+I = identity  # pylint: disable=invalid-name
+
+
 def pipeline(*funcs):
-    return reduce(operator.or_, map(F, funcs), F(identity))
+    """Construct a pipeline from passed functions."""
+    return reduce(operator.or_, map(F, funcs), I)
