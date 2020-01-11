@@ -56,7 +56,6 @@ class TestPartialApplication:
 
 
 class TestFunctionComposition:
-
     @staticmethod
     def test_function_composition_via_method():
         double_sum = F(sum).compose(double)
@@ -94,7 +93,6 @@ class TestFunctionComposition:
 
 
 class TestMapFilterReduce:
-
     @staticmethod
     def test_map_property():
         map_double = F(double).map | list
@@ -137,7 +135,6 @@ class TestMapFilterReduce:
 
 
 class TestArgumentPipeline:
-
     @staticmethod
     def test_piping_single_argument():
         assert [3, 2, 1] | F(sorted) == [1, 2, 3]
@@ -174,7 +171,6 @@ def test_repr_of_wrapped_function_is_as_expected():
 
 
 class TestMapFilterReduceOperators:
-
     @staticmethod
     def test_left_reduce_operator():
         double_sum = F(double) / operator.add
@@ -197,5 +193,5 @@ class TestMapFilterReduceOperators:
 
     @staticmethod
     def test_unary_map_operator():
-        double_sum = + F(double) / operator.add
+        double_sum = +F(double) / operator.add
         assert double_sum([1, 2, 3]) == 12

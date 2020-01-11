@@ -9,8 +9,10 @@ __version__ = "0.0.0"
 
 def compose(*functions: Callable) -> Callable:
     """Composes arbitrary number of functions."""
+
     def _compose_pair(outer: Callable, inner: Callable) -> Callable:
         return lambda *args, **kwargs: outer(inner(*args, **kwargs))
+
     return reduce(_compose_pair, functions, lambda _: _)
 
 
