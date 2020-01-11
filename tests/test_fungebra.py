@@ -222,7 +222,11 @@ def test_requests_example():
     @Function
     def requests_get(_url, headers=None):
         return namedtuple("response", ["json", "headers"])(
-            json=lambda: {"total": 10, "hits": range(10)}, headers=headers
+            json=lambda: {
+                "total": 10,
+                "hits": [{"value": val} for val in range(10)],
+            },
+            headers=headers,
         )
 
     get_json = requests_get >> dict(
@@ -233,6 +237,19 @@ def test_requests_example():
 
     assert get_total_records("/posts") == 10
 
-    get_even_records = get_json | operator.itemgetter("hits") % F(even) | list
+    get_even_record_values = (
+        get_json
+        | operator.itemgetter("hits")
+        | F(operator.itemgetter("value")).map % F(even)
+        | list
+    )
 
-    assert get_even_records("/posts") == [0, 2, 4, 6, 8]
+    assert get_even_record_values("/posts") == [0, 2, 4, 6, 8]
+
+    get_total_record_values = (
+        get_json
+        | operator.itemgetter("hits")
+        | F(operator.itemgetter("value")).map / operator.add
+    )
+
+    assert get_total_record_values("/posts") == 45
