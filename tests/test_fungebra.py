@@ -1,7 +1,8 @@
+from collections import namedtuple
 from functools import partial
 import operator
 
-from fungebra import Args, F, identity, pipeline
+from fungebra import Args, F, Function, identity, pipeline
 
 
 def add(*args):
@@ -215,3 +216,23 @@ class TestMapFilterReduceOperators:
     def test_unary_map_operator():
         double_sum = +F(double) / operator.add
         assert double_sum([1, 2, 3]) == 12
+
+
+def test_requests_example():
+    @Function
+    def requests_get(_url, headers=None):
+        return namedtuple("response", ["json", "headers"])(
+            json=lambda: {"total": 10, "hits": range(10)}, headers=headers
+        )
+
+    get_json = requests_get >> dict(
+        headers={"ACCEPT": "application/json"}
+    ) | operator.methodcaller("json")
+
+    get_total_records = get_json | operator.itemgetter("total")
+
+    assert get_total_records("/posts") == 10
+
+    get_even_records = get_json | operator.itemgetter("hits") % F(even) | list
+
+    assert get_even_records("/posts") == [0, 2, 4, 6, 8]
