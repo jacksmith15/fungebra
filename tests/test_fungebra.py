@@ -54,6 +54,26 @@ class TestPartialApplication:
         func = F(sorted) << Args([1, 2, 3], key=operator.neg)
         assert func() == [3, 2, 1]
 
+    @staticmethod
+    def test_rshift_partial_application_chaining():
+        func = F(add) >> (3, 4) >> (1, 2)
+        assert func() == 10
+
+    @staticmethod
+    def test_rshift_partial_application_argument_ordering():
+        func = F(operator.sub) >> (3,) >> (1,)
+        assert func() == -2
+
+    @staticmethod
+    def test_rshift_partial_application_with_kwargs_from_dict():
+        reverse_sorted = F(sorted) >> {"key": operator.neg}
+        assert reverse_sorted([1, 2, 3]) == [3, 2, 1]
+
+    @staticmethod
+    def test_rshift_partial_application_with_kwargs_in_args_object():
+        func = F(sorted) >> Args([1, 2, 3], key=operator.neg)
+        assert func() == [3, 2, 1]
+
 
 class TestFunctionComposition:
     @staticmethod

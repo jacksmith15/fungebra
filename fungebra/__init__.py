@@ -39,6 +39,9 @@ class Function:
     def partial(self, *args, **kwargs):
         return F(partial(self.func, *args, **kwargs))
 
+    def rpartial(self, *args, **kwargs):
+        return F(lambda *a, **kw: self.func(*a, *args, **kw, **kwargs))
+
     @property
     def map(self):
         return F(map).partial(self)
@@ -76,11 +79,10 @@ class Function:
         return self(other)
 
     def __lshift__(self, input_args):
-        if isinstance(input_args, Args):
-            return self.partial(*input_args.args, **input_args.kwargs)
-        if isinstance(input_args, Mapping):
-            return self.partial(**input_args)
-        return self.partial(*input_args)
+        return self._as_args(self.partial, input_args)
+
+    def __rshift__(self, input_args):
+        return self._as_args(self.rpartial, input_args)
 
     def __pos__(self):
         return self.map
@@ -96,6 +98,14 @@ class Function:
 
     def __rmod__(self, other):
         return F(other).filter(self)
+
+    @staticmethod
+    def _as_args(function, input_args):
+        if isinstance(input_args, Args):
+            return function(*input_args.args, **input_args.kwargs)
+        if isinstance(input_args, Mapping):
+            return function(**input_args)
+        return function(*input_args)
 
 
 class Args:
