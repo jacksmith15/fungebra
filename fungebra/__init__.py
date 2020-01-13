@@ -51,8 +51,8 @@ class Function:
     def pipe(self, func):
         return F(func).compose(self)
 
-    def __or__(self, func):
-        return self.pipe(func)
+    def __or__(self, other):
+        return self.pipe(other)
 
     def __ror__(self, other):
         if callable(other):
@@ -60,6 +60,12 @@ class Function:
         if isinstance(other, Args):
             return self(*other.args, **other.kwargs)
         return self(other)
+
+    def __pow__(self, other):
+        return self.pipe(other)
+
+    def __rpow__(self, other):
+        return F(other).pipe(self)
 
     def partial(self, *args, **kwargs):
         return F(partial(self.func, *args, **kwargs))
@@ -94,6 +100,9 @@ class Function:
     def __lt__(self, other):
         return self.filter(other)
 
+    def __le__(self, other):
+        return self.map.filter(other)
+
     def reduce(self, reduce_func: Callable = None):
         if reduce_func:
             return self | F(reduce).partial(reduce_func)
@@ -101,6 +110,9 @@ class Function:
 
     def __gt__(self, other):
         return self.reduce(other)
+
+    def __ge__(self, other):
+        return self.map.reduce(other)
 
     @staticmethod
     def _as_args(function, input_args):

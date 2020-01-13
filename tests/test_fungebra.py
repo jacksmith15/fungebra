@@ -1,3 +1,5 @@
+# False positive on overloaded operators.
+# pylint: disable=comparison-with-callable
 from collections import namedtuple
 import operator
 
@@ -115,6 +117,16 @@ class TestFunctionComposition:
         double_sum = pipeline(double, sum)
         assert double_sum([1, 2, 3]) == 12
 
+    @staticmethod
+    def test_function_composition_via_left_pow():
+        double_sum = F(double) ** sum
+        assert double_sum([1, 2, 3]) == 12
+
+    @staticmethod
+    def test_function_composition_via_right_pow():
+        double_sum = double ** F(sum)
+        assert double_sum([1, 2, 3]) == 12
+
 
 class TestMapFilterReduce:
     @staticmethod
@@ -156,6 +168,16 @@ class TestMapFilterReduce:
     def test_map_filter_reduce():
         map_filter_reduce = F(increment).map.filter(even).reduce(operator.add)
         assert map_filter_reduce([1, 2, 3]) == 6
+
+    @staticmethod
+    def test_map_filter_operator():
+        map_filter = list + (F(increment) <= even)
+        assert map_filter([1, 2, 3]) == [2, 4]
+
+    @staticmethod
+    def test_map_reduce_operator():
+        map_reduce = F(double) >= operator.add
+        assert map_reduce([1, 2, 3]) == 12
 
 
 class TestArgumentPipeline:
@@ -217,8 +239,6 @@ class TestMapFilterReduceOperators:
 
     @staticmethod
     def test_filter_operator():
-        # False positive.
-        # pylint: disable=comparison-with-callable
         increment_filter = list + (F(increment).map < even)
         assert increment_filter([1, 2, 3]) == [2, 4]
 
@@ -238,20 +258,20 @@ def test_requests_example():
         headers={"ACCEPT": "application/json"}
     ) | operator.methodcaller("json")
 
-    get_total_records = get_json | operator.itemgetter("total")
+    get_key = lambda key: F(operator.itemgetter(key))
+
+    get_total_records = get_json | get_key("total")
 
     assert get_total_records("/posts") == 10
 
     get_even_record_values = list + (
-        get_json | operator.itemgetter("hits") - F(operator.itemgetter("value"))
-        < F(even)
+        get_json | get_key("hits") - get_key("value") < F(even)
     )
 
     assert get_even_record_values("/posts") == [0, 2, 4, 6, 8]
 
     get_total_record_values = (
-        get_json | operator.itemgetter("hits") - F(operator.itemgetter("value"))
-        > operator.add
+        get_json | get_key("hits") - get_key("value") > operator.add
     )
 
     assert get_total_record_values("/posts") == 45
