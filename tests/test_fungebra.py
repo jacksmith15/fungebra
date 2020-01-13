@@ -1,5 +1,4 @@
 from collections import namedtuple
-from functools import partial
 import operator
 
 from fungebra import Args, F, Function, identity, pipeline
@@ -19,6 +18,10 @@ def increment(number):
 
 def even(number):
     return not number % 2
+
+
+def test_positive_returns_self():
+    assert (+F(even)).func is even
 
 
 class TestPartialApplication:
@@ -79,7 +82,7 @@ class TestPartialApplication:
 class TestFunctionComposition:
     @staticmethod
     def test_function_composition_via_method():
-        double_sum = F(sum).compose(double)
+        double_sum = F(double).compose(sum)
         assert double_sum([1, 2, 3]) == 12
 
     @staticmethod
@@ -193,29 +196,31 @@ def test_repr_of_wrapped_function_is_as_expected():
 
 class TestMapFilterReduceOperators:
     @staticmethod
-    def test_left_reduce_operator():
-        double_sum = F(double) / operator.add
-        assert double_sum([1, 2, 3]) == 12
-
-    @staticmethod
-    def test_right_reduce_operator():
-        double_sum = double / F(operator.add)
-        assert double_sum([1, 2, 3]) == 12
-
-    @staticmethod
-    def test_left_filter_operator():
-        increment_filter = F(increment).map % even | list
-        assert increment_filter([1, 2, 3]) == [2, 4]
-
-    @staticmethod
-    def test_right_filter_operator():
-        increment_filter = partial(map, increment) % F(even) | list
-        assert increment_filter([1, 2, 3]) == [2, 4]
-
-    @staticmethod
     def test_unary_map_operator():
-        double_sum = +F(double) / operator.add
+        double_each = -F(double) | list
+        assert double_each([1, 2, 3]) == [2, 4, 6]
+
+    @staticmethod
+    def test_left_map_operator():
+        sort_double = F(sorted) - double | list
+        assert sort_double([3, 2, 1]) == [2, 4, 6]
+
+    @staticmethod
+    def test_right_map_operator():
+        sort_double = sorted - F(double) | list
+        assert sort_double([3, 2, 1]) == [2, 4, 6]
+
+    @staticmethod
+    def test_reduce_operator():
+        double_sum = -F(double) > operator.add
         assert double_sum([1, 2, 3]) == 12
+
+    @staticmethod
+    def test_filter_operator():
+        # False positive.
+        # pylint: disable=comparison-with-callable
+        increment_filter = list + (F(increment).map < even)
+        assert increment_filter([1, 2, 3]) == [2, 4]
 
 
 def test_requests_example():
@@ -237,19 +242,16 @@ def test_requests_example():
 
     assert get_total_records("/posts") == 10
 
-    get_even_record_values = (
-        get_json
-        | operator.itemgetter("hits")
-        | F(operator.itemgetter("value")).map % F(even)
-        | list
+    get_even_record_values = list + (
+        get_json | operator.itemgetter("hits") - F(operator.itemgetter("value"))
+        < F(even)
     )
 
     assert get_even_record_values("/posts") == [0, 2, 4, 6, 8]
 
     get_total_record_values = (
-        get_json
-        | operator.itemgetter("hits")
-        | F(operator.itemgetter("value")).map / operator.add
+        get_json | operator.itemgetter("hits") - F(operator.itemgetter("value"))
+        > operator.add
     )
 
     assert get_total_record_values("/posts") == 45

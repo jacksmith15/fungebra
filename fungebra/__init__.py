@@ -36,68 +36,71 @@ class Function:
     def __repr__(self):
         return f"Function({repr(self.func)})"
 
+    def __pos__(self):
+        return self
+
+    def compose(self, *others):
+        return F(compose(self, *others))
+
+    def __add__(self, func):
+        return self.compose(func)
+
+    def __radd__(self, func):
+        return F(func).compose(self)
+
+    def pipe(self, func):
+        return F(func).compose(self)
+
+    def __or__(self, func):
+        return self.pipe(func)
+
+    def __ror__(self, other):
+        if callable(other):
+            return F(other).pipe(self)
+        if isinstance(other, Args):
+            return self(*other.args, **other.kwargs)
+        return self(other)
+
     def partial(self, *args, **kwargs):
         return F(partial(self.func, *args, **kwargs))
 
     def rpartial(self, *args, **kwargs):
         return F(lambda *a, **kw: self.func(*a, *args, **kw, **kwargs))
 
+    def __lshift__(self, input_args):
+        return F._as_args(self.partial, input_args)
+
+    def __rshift__(self, input_args):
+        return F._as_args(self.rpartial, input_args)
+
     @property
     def map(self):
         return F(map).partial(self)
+
+    def __neg__(self):
+        return self.map
+
+    def __sub__(self, other):
+        return self.pipe(F(other).map)
+
+    def __rsub__(self, other):
+        return F(other).pipe(self.map)
 
     def filter(self, filter_func: Callable = None):
         if filter_func:
             return self | F(filter).partial(filter_func)
         return F(partial(filter, self))
 
+    def __lt__(self, other):
+        return self.filter(other)
+
     def reduce(self, reduce_func: Callable = None):
         if reduce_func:
             return self | F(reduce).partial(reduce_func)
         return F(partial(reduce, self))
 
-    def compose(self, *others):
-        return F(compose(*others, self))
-
-    def pipe(self, func):
-        return self | func
-
-    def __add__(self, func):
-        return F(func).compose(self)
-
-    def __radd__(self, func):
-        return self | func
-
-    def __or__(self, func):
-        return self.compose(func)
-
-    def __ror__(self, other):
-        if callable(other):
-            return self + other
-        if isinstance(other, Args):
-            return self(*other.args, **other.kwargs)
-        return self(other)
-
-    def __lshift__(self, input_args):
-        return self._as_args(self.partial, input_args)
-
-    def __rshift__(self, input_args):
-        return self._as_args(self.rpartial, input_args)
-
-    def __pos__(self):
-        return self.map
-
-    def __truediv__(self, other):
+    def __gt__(self, other):
         return self.reduce(other)
-
-    def __rtruediv__(self, other):
-        return F(other).reduce(self)
-
-    def __mod__(self, other):
-        return self.filter(other)
-
-    def __rmod__(self, other):
-        return F(other).filter(self)
 
     @staticmethod
     def _as_args(function, input_args):
