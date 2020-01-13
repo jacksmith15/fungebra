@@ -143,4 +143,4 @@ I = identity  # pylint: disable=invalid-name
 
 def pipeline(*funcs):
     """Construct a pipeline from passed functions."""
-    return reduce(operator.or_, map(F, funcs), I)
+    return reduce(operator.add, map(F, reversed(funcs)), I)
