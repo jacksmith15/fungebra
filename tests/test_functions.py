@@ -116,7 +116,7 @@ def test_taker():
 
 
 def test_iffy():
-    truncate_negative = iffy(lambda x: x < 0, constantly(0))
+    truncate_negative = iffy(less(0), constantly(0))
     assert truncate_negative.lmap([-1, 2, 4]) == [0, 2, 4]
 
 

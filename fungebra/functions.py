@@ -21,7 +21,7 @@ def collect(function: Callable) -> Callable:
     collect(sum).partial(1)(2, 3) == 6
     ```
     """
-    return Function(lambda *args: function(args))
+    return Function(function).collect
 
 
 @Function
@@ -37,7 +37,7 @@ def expand(function: Callable) -> Callable:
     (itemgetter("foo").map | expand(chain) | list)(data) == [1,2,3,4]
     ```
     """
-    return Function(lambda args: function(*args))
+    return Function(function).expand
 
 
 @Function
@@ -216,8 +216,8 @@ def iffy(
 
     For example:
     ```
-    bound_negative = iffy(lambda x: x < 0, constantly(0))
-    bound_negative.lmap([-1, 2, 4]) == [0, 2, 4]
+    truncate_negative = iffy(less(0), constantly(0))
+    truncate_negative.lmap([-1, 2, 4]) == [0, 2, 4]
     ```
     """
     return Function(lambda arg: func(arg) if predicate(arg) else default(arg))

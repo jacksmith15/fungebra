@@ -169,16 +169,6 @@ class TestMapFilterReduce:
         map_filter_reduce = F(increment).map.filter(even).reduce(operator.add)
         assert map_filter_reduce([1, 2, 3]) == 6
 
-    @staticmethod
-    def test_map_filter_operator():
-        map_filter = list + (F(increment) <= even)
-        assert map_filter([1, 2, 3]) == [2, 4]
-
-    @staticmethod
-    def test_map_reduce_operator():
-        map_reduce = F(double) >= operator.add
-        assert map_reduce([1, 2, 3]) == 12
-
 
 class TestArgumentPipeline:
     @staticmethod
@@ -241,6 +231,16 @@ class TestMapFilterReduceOperators:
     def test_filter_operator():
         increment_filter = list + (F(increment).map < even)
         assert increment_filter([1, 2, 3]) == [2, 4]
+
+    @staticmethod
+    def test_map_filter_operator():
+        map_filter = list + (F(increment) <= even)
+        assert map_filter([1, 2, 3]) == [2, 4]
+
+    @staticmethod
+    def test_map_reduce_operator():
+        map_reduce = F(double) >= operator.add
+        assert map_reduce([1, 2, 3]) == 12
 
 
 def test_requests_example():

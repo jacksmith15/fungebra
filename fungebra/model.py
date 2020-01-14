@@ -36,6 +36,14 @@ class Function:
     def __pos__(self):
         return self
 
+    @property
+    def collect(self):
+        return Function(lambda *args: self.func(args))
+
+    @property
+    def expand(self):
+        return Function(lambda args: self.func(*args))
+
     def compose(self, *others):
         return Function(compose(self, *others))
 
