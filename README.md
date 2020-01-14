@@ -2,7 +2,7 @@
 # Fungebra
 Wrapper to allow algebraic manipulation and composition of functions. An abstract callable provides methods for chaining and combining functions, and defines an expression syntax for doing the same.
 
-The aims of this package are purely academic, and I do not recommend using this if you respect the other people who must read on your code.
+The aims of this package are purely academic; I do not recommend using this if you respect the people who must read your code.
 
 ```python
 from fungebra import Function
