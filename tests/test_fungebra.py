@@ -31,7 +31,7 @@ def test_decorate():
         return lambda x: func(x) + 1
 
     assert identity.decorate(decorator)(0) == 1
-    assert isinstance(identity.decorate, Function)
+    assert isinstance(identity.decorate(decorator), Function)
 
 
 class TestPartialApplication:
