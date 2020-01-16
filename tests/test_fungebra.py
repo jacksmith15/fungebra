@@ -26,6 +26,14 @@ def test_positive_returns_self():
     assert (+F(even)).func is even
 
 
+def test_decorate():
+    def decorator(func):
+        return lambda x: func(x) + 1
+
+    assert identity.decorate(decorator)(0) == 1
+    assert isinstance(identity.decorate, Function)
+
+
 class TestPartialApplication:
     @staticmethod
     def test_full_arguments_with_chaining():

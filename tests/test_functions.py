@@ -1,26 +1,30 @@
+from collections import namedtuple
 import functools
 from itertools import chain
+import json
 
 import pytest
 
 from fungebra.functions import (
-    iffy,
-    taker,
-    raiser,
-    suppress,
-    equals,
-    greater,
+    attrgetter,
+    caller,
     collect,
     constantly,
+    duxt,
+    equals,
     expand,
-    itemgetter,
-    caller,
-    less,
-    is_,
     fnot,
+    greater,
     identity,
-    attrgetter,
+    iffy,
+    is_,
+    itemgetter,
+    juxt,
+    less,
     methodcaller,
+    raiser,
+    suppress,
+    taker,
 )
 
 
@@ -42,6 +46,33 @@ def test_caller():
 
 def test_constantly():
     assert constantly(True).lmap([1, 2, 3]) == [True, True, True]
+
+
+def test_juxt():
+    response = namedtuple("response", ["status", "headers"])(
+        200, {"content_type": "application/json"}
+    )
+    get_response_head = (
+        juxt.expand(attrgetter.map(["status", "headers"])) | list
+    )
+    assert get_response_head(response) == [
+        200,
+        {"content_type": "application/json"},
+    ]
+
+
+def test_duxt():
+    query = namedtuple("query", ["count", "all"])(
+        lambda: 3, lambda: ["a", "b", "c"]
+    )
+    build_response = (
+        duxt(total=methodcaller("count"), hits=methodcaller("all"))
+        | dict
+        | json.dumps
+    )
+    assert build_response(query) == json.dumps(
+        {"total": 3, "hits": ["a", "b", "c"]}
+    )
 
 
 def test_is_():

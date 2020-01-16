@@ -84,6 +84,9 @@ class Function:
     def __rshift__(self, input_args):
         return Function._as_args(self.rpartial, input_args)
 
+    def decorate(self, decorator):
+        return Function(decorator(self))
+
     @property
     def map(self):
         return Function(map).partial(self)

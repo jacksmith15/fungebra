@@ -138,7 +138,6 @@ def truncate_below(minimum: int) -> int:
 truncate_below(0).lmap([-1, 2, 4]) == [0, 2, 4]
 ```
 
-
 # Requirements
 This package is currently tested for Python 3.6.
 

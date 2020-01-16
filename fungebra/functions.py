@@ -66,6 +66,37 @@ def constantly(const: Any):
     return Function(lambda *_a, **_kw: const)
 
 
+@Function
+def juxt(*functions):
+    """Function which returns results of other functions in an iterator.
+
+    For example:
+    ```
+    get_response_head = attrgetter.map(["status", "headers"]) | juxt.collect
+    status, headers = get_response_head(response)
+    ```
+    """
+    return Function(lambda arg: (fn(arg) for fn in functions))
+
+
+@Function
+def duxt(**named_functions):
+    """Function returning results of other functions in a key-value iterator.
+
+    For example:
+    ```
+    build_response = duxt(
+        total=methodcaller("count"),
+        hits=methodcaller("all")
+    ) | dict | json.dumps
+    body = build_response(query)
+    ```
+    """
+    return Function(
+        lambda arg: ((name, fn(arg)) for name, fn in named_functions.items())
+    )
+
+
 # Data comparison functions
 
 
